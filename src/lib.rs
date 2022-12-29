@@ -22,14 +22,21 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments.");
-        }
-        let query = args[1].clone();
-        let file = args[2].clone();
-        let case_sensitive = args.get(3).unwrap_or(&"".to_string()).to_string();
-        let case_sensitive = !case_sensitive.is_empty();
+    pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+        args.next(); // reject the first arg, always program name
+
+        let query = match args.next() {
+            Some(q) => q,
+            None => return Err("Need a search query"),
+        };
+
+        let file = match args.next() {
+            Some(f) => f,
+            None => return Err("Need a valid path"),
+        };
+
+        let case_sensitive = args.next().is_some();
+
         Ok(Config {
             file,
             query,
